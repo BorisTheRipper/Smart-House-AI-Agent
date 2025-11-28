@@ -52,6 +52,10 @@ manager = ConnectionManager()
 async def root():
     return {"message": "LLM Websocket is running!", "version": "1.0.1"}
 
+@app.get("/active_clients")
+async def active_clients():
+    return {"active_clients": list(manager.active_connections.keys())}
+
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(
     websocket: WebSocket, 
