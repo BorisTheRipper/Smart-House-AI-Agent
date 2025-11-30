@@ -6,11 +6,7 @@ from .routers import system, websocket
 check_keys()
 
 # 2. Create App
-app = FastAPI(
-    docs_url=None, 
-    redoc_url=None, 
-    openapi_url=None
-)
+app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
 # 3. Include Routers
 app.include_router(system.router)

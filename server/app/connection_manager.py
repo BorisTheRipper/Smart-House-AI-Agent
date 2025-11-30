@@ -1,10 +1,11 @@
 import asyncio
 import redis.asyncio as redis
 
+from typing import Dict
 from redis.asyncio.client import PubSub
 from fastapi import WebSocket
-from typing import Dict
 from .config import REDIS_URL, logger
+
 
 class ConnectionManager:
     """
@@ -17,23 +18,26 @@ class ConnectionManager:
     4. listen_to_redis: Listens for messages from Redis and forwards them to
        the appropriate WebSocket client.
     """
+
     def __init__(self):
         self.active_connections: Dict[str, WebSocket] = {}
         self.pubsub_connections: Dict[str, PubSub] = {}
-        self.redis_client = redis.from_url(REDIS_URL, encoding="utf-8", decode_responses=True)
+        self.redis_client = redis.from_url(
+            REDIS_URL, encoding="utf-8", decode_responses=True
+        )
 
     async def connect(self, websocket: WebSocket, client_id: str):
         # Accept the WebSocket connection
         await websocket.accept()
         self.active_connections[client_id] = websocket
-        
+
         # Create a PubSub connection for every unique client
         pubsub = self.redis_client.pubsub()
         self.pubsub_connections[client_id] = pubsub
-        
+
         # Subscribe to the client's specific channel
         await pubsub.subscribe(client_id)
-        
+
         # Start listening to Redis messages for this client
         asyncio.create_task(self.listen_to_redis(client_id))
 
@@ -65,7 +69,7 @@ class ConnectionManager:
             if not pubsub:
                 logger.error(f"No pubsub connection found for {client_id}")
                 return
-                
+
             async for message in pubsub.listen():
                 if message["type"] == "message":
                     payload = message["data"]
@@ -80,5 +84,6 @@ class ConnectionManager:
             logger.info(f"Redis listener cancelled for {client_id}")
         except Exception as e:
             logger.error(f"Redis listener error for {client_id}: {e}")
+
 
 manager = ConnectionManager()
