@@ -1,7 +1,8 @@
 import json
+from typing import Annotated
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Header, status
-from ..config import logger, CONTROLLER_ID
+from ..config import logger, CONTROLLER_ID, CLIENT_ID_PATTERN
 from ..connection_manager import manager
 from ..dependencies import validate_auth
 
@@ -12,8 +13,14 @@ router = APIRouter()
 async def websocket_endpoint(
     websocket: WebSocket,
     client_id: str,
-    x_auth_token: str | None = Header(default=None),
+    x_auth_token: Annotated[str | None, Header()] = None,
 ):
+    # 0. Client ID Validation
+    if not CLIENT_ID_PATTERN.match(client_id):
+        logger.warning("Invalid client_id format: %s", client_id[:50])
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        return
+
     # 1. Authentication
     if not await validate_auth(websocket, client_id, x_auth_token):
         return
