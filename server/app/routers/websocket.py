@@ -40,7 +40,9 @@ async def websocket_endpoint(
                     command = message_data.get("message")
 
                     if target and command:
-                        logger.debug("LLM -> Redis Pub/Sub -> (%s): %s", target, command)
+                        logger.debug(
+                            "LLM -> Redis Pub/Sub -> (%s): %s", target, command
+                        )
                         await manager.send_message(command, target)
                     else:
                         await manager.send_message(
