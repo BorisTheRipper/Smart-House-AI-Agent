@@ -1,5 +1,3 @@
-import traceback
-
 from fastapi import FastAPI
 from faster_whisper import WhisperModel
 
