@@ -23,7 +23,7 @@ COMMAND_MAP = {
 
 
 @router.post("/voice-message")
-async def transcribe_voice(file: UploadFile = File(...)):
+async def handle_voice_message(file: UploadFile = File(...)):
     try:
         # Transcribe
         transcription = await transcribe_audio_file(file)
