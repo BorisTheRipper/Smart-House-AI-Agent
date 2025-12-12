@@ -28,26 +28,26 @@ async def handle_voice_message(file: UploadFile = File(...)):
         # Transcribe
         transcription = await transcribe_audio_file(file)
         if not transcription:
-             raise HTTPException(500, "Too short to transcribe")
-             
+            raise HTTPException(500, "Too short to transcribe")
+
         # Analyze Intent
         logger.info(f"Thinking about: {transcription}")
         intent = analyze_intent(transcription)
         logger.info(f"Intent detected: {intent}")
-        
+
         command = intent.get("command")
-        
+
         # Route Command via WebSocket
         if command and command in COMMAND_MAP:
             target_client, message = COMMAND_MAP[command]
-            logger.info(f"Routing command '{command}' to '{target_client}' with payload '{message}'")
-            
+            logger.info(
+                f"Routing command '{command}' to '{target_client}' with payload '{message}'"
+            )
+
             # Helper function in manager handles sending to specific client
             await manager.send_message(message, target_client)
         else:
             logger.info(f"No direct device command found for: {command}")
-
-
 
         # 4. Generate Audio Reply
         reply_text = intent.get("reply")
@@ -55,7 +55,7 @@ async def handle_voice_message(file: UploadFile = File(...)):
         if reply_text:
             logger.info(f"Generating speech for reply: {reply_text}")
             audio_content = generate_speech(reply_text)
-        
+
         if audio_content:
             return Response(content=audio_content, media_type="audio/wav")
         else:
@@ -66,7 +66,7 @@ async def handle_voice_message(file: UploadFile = File(...)):
             # If we fail, maybe 500 is safer to signal Unity something went wrong.
             logger.error("Failed to generate audio content")
             raise HTTPException(500, "Failed to generate audio response")
-        
+
     except Exception as e:
         logger.error(f"Transcribe/Process error: {e}")
         raise HTTPException(500, f"Transcribe error: {e}")

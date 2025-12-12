@@ -75,6 +75,7 @@ async def transcribe_audio_file(file: UploadFile) -> str:
             except Exception as e:
                 print(f"Error removing temp file: {e}")
 
+
 SYSTEM_PROMPT = """
 You are a smart home assistant. You analyze the user's voice command and extract the intent.
 Output ONLY a JSON object with the following schema:
@@ -100,19 +101,24 @@ Examples:
 Output strictly JSON.
 """
 
+
 def analyze_intent(text: str) -> dict:
     """
     Analyzes the text using Llama 3.2 via Ollama to determine the intent.
     """
     client = ollama.Client(host=OLLAMA_HOST)
-    
+
     try:
-        response = client.chat(model=OLLAMA_MODEL, messages=[
-            {'role': 'system', 'content': SYSTEM_PROMPT},
-            {'role': 'user', 'content': f"Command: {text}"},
-        ], format='json')
-        
-        content = response['message']['content']
+        response = client.chat(
+            model=OLLAMA_MODEL,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": f"Command: {text}"},
+            ],
+            format="json",
+        )
+
+        content = response["message"]["content"]
         intent = json.loads(content)
         return intent
     except Exception as e:
@@ -126,17 +132,11 @@ def generate_speech(text: str) -> bytes:
     """
     try:
 
+        payload = {"text": text, "format": "wav", "reference_id": "voice"}
 
-        payload = {
-            "text": text,
-            "format": "wav",
-            "reference_id": "voice"
-        }
-        
-        
         print(f"Generating speech for: '{text}' at {FISH_SPEECH_API_URL}")
         response = requests.post(FISH_SPEECH_API_URL, json=payload, timeout=10)
-        
+
         if response.status_code == 200:
             return response.content
         else:

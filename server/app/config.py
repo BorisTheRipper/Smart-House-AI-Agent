@@ -29,7 +29,9 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 WHISPER_MODEL_SIZE = "large-v3"
 OLLAMA_MODEL = "llama3.2"
 OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
-FISH_SPEECH_API_URL = os.environ.get("FISH_SPEECH_API_URL", "http://localhost:8080/v1/tts")
+FISH_SPEECH_API_URL = os.environ.get(
+    "FISH_SPEECH_API_URL", "http://localhost:8080/v1/tts"
+)
 
 
 # --- Startup Check ---
