@@ -211,3 +211,5 @@ tests/
 
 # Local development idea files
 features.md
+
+.vs/
