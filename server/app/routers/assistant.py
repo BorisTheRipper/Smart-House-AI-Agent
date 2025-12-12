@@ -1,7 +1,7 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Response
 import logging
 
-from server.app.helpers import transcribe_audio_file, analyze_intent
+from server.app.helpers import transcribe_audio_file, analyze_intent, generate_speech
 from server.app.connection_manager import manager
 
 router = APIRouter()
@@ -47,7 +47,25 @@ async def transcribe_voice(file: UploadFile = File(...)):
         else:
             logger.info(f"No direct device command found for: {command}")
 
-        return {"text": transcription, "intent": intent}
+
+
+        # 4. Generate Audio Reply
+        reply_text = intent.get("reply")
+        audio_content = None
+        if reply_text:
+            logger.info(f"Generating speech for reply: {reply_text}")
+            audio_content = generate_speech(reply_text)
+        
+        if audio_content:
+            return Response(content=audio_content, media_type="audio/wav")
+        else:
+            # Fallback if TTS fails (or no reply), though user asked for audio only.
+            # Returning 500 might be appropriate if audio is strictly required,
+            # but let's return JSON with error or just the JSON as fallback.
+            # User said "post'ta return olarak sadece ses dosyası olacak".
+            # If we fail, maybe 500 is safer to signal Unity something went wrong.
+            logger.error("Failed to generate audio content")
+            raise HTTPException(500, "Failed to generate audio response")
         
     except Exception as e:
         logger.error(f"Transcribe/Process error: {e}")

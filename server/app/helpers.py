@@ -1,12 +1,13 @@
 import os
 import tempfile
+import requests
 
 from fastapi import HTTPException, UploadFile
 
 from server.app import app_context
 import json
 import ollama
-from server.app.config import OLLAMA_MODEL, OLLAMA_HOST
+from server.app.config import OLLAMA_MODEL, OLLAMA_HOST, FISH_SPEECH_API_URL
 
 
 async def transcribe_audio_file(file: UploadFile) -> str:
@@ -78,23 +79,23 @@ SYSTEM_PROMPT = """
 You are a smart home assistant. You analyze the user's voice command and extract the intent.
 Output ONLY a JSON object with the following schema:
 {
-  "command": "klima_ac" | "klima_kapa" | "isik_ac" | "isik_kapa" | "kahve_ac" | "kahve_kapa" | "muzik_ac" | "muzik_kapa" | "televizyon_ac" | "televizyon_kapa" | "UNKNOWN",
-  "reply": "A short, natural Turkish response confirming the action or explaining why it's not understood"
+  "command": "klima_ac" | "klima_kapa" | "isik_ac" | "isik_kapa" | "kahve_ac" | "kahve_kapa" | "muzik_ac" | "muzik_kapa" | "televizyon_ac" | "televizyon_kapa" | "CHAT",
+  "reply": "A short, natural Turkish response."
 }
 
 Rules:
-- Combine device and action with an underscore (device_action).
-- Devices: klima, isik, kahve, muzik, televizyon
-- Actions: ac (for aç, başlat, yap), kapa (for kapat, durdur)
+- If the user wants to control a device, use the specific device_action command.
+- If the user is just chatting or asking a general question, use "CHAT".
 - The "reply" MUST be in Turkish.
+- For "CHAT", reply naturally to the user's input.
+- For commands, confirm the action in the reply.
 
 Examples:
 - "Klimayı aç" -> {"command": "klima_ac", "reply": "Tamam, klimayı açıyorum."}
 - "Işıkları kapat" -> {"command": "isik_kapa", "reply": "Işıkları kapattım."}
+- "Merhaba, nasılsın?" -> {"command": "CHAT", "reply": "Merhaba! İyiyim, teşekkürler. Size nasıl yardımcı olabilirim?"}
+- "Bugün hava nasıl?" -> {"command": "CHAT", "reply": "Hava durumu hakkında bilgim yok ama sıcakladıysan klimayı ayarlayabilirim."}
 - "Kahve yap" -> {"command": "kahve_ac", "reply": "Hemen kahvenizi hazırlıyorum."}
-- "Müziği aç" -> {"command": "muzik_ac", "reply": "Müzik başlıyor."}
-- "Televizyonu kapat" -> {"command": "televizyon_kapa", "reply": "Televizyonu kapatıyorum."}
-- "Bana bir şaka yap" -> {"command": "UNKNOWN", "reply": "Sadece ev cihazlarını kontrol edebilirim."}
 
 Output strictly JSON.
 """
@@ -117,3 +118,30 @@ def analyze_intent(text: str) -> dict:
     except Exception as e:
         print(f"LLM Error: {e}")
         return {"command": "UNKNOWN", "reply": "Bir hata oluştu.", "error": str(e)}
+
+
+def generate_speech(text: str) -> bytes:
+    """
+    Generates speech from text using the Fish Speech from the Docker container.
+    """
+    try:
+
+
+        payload = {
+            "text": text,
+            "format": "wav",
+            "reference_id": "voice"
+        }
+        
+        
+        print(f"Generating speech for: '{text}' at {FISH_SPEECH_API_URL}")
+        response = requests.post(FISH_SPEECH_API_URL, json=payload, timeout=10)
+        
+        if response.status_code == 200:
+            return response.content
+        else:
+            print(f"Fish Speech API Error: {response.status_code} - {response.text}")
+            return None
+    except Exception as e:
+        print(f"TTS Error: {e}")
+        return None
