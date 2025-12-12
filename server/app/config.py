@@ -27,6 +27,8 @@ REDIS_URL = f"redis://:{REDIS_PASSWORD}@redis:6379/0"
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 WHISPER_MODEL_SIZE = "large-v3"
+OLLAMA_MODEL = "llama3.2"
+OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
 
 
 # --- Startup Check ---

@@ -4,6 +4,9 @@ import tempfile
 from fastapi import HTTPException, UploadFile
 
 from server.app import app_context
+import json
+import ollama
+from server.app.config import OLLAMA_MODEL, OLLAMA_HOST
 
 
 async def transcribe_audio_file(file: UploadFile) -> str:
@@ -70,3 +73,47 @@ async def transcribe_audio_file(file: UploadFile) -> str:
                 os.remove(temp_audio_path)
             except Exception as e:
                 print(f"Error removing temp file: {e}")
+
+SYSTEM_PROMPT = """
+You are a smart home assistant. You analyze the user's voice command and extract the intent.
+Output ONLY a JSON object with the following schema:
+{
+  "command": "klima_ac" | "klima_kapa" | "isik_ac" | "isik_kapa" | "kahve_ac" | "kahve_kapa" | "muzik_ac" | "muzik_kapa" | "televizyon_ac" | "televizyon_kapa" | "UNKNOWN",
+  "reply": "A short, natural Turkish response confirming the action or explaining why it's not understood"
+}
+
+Rules:
+- Combine device and action with an underscore (device_action).
+- Devices: klima, isik, kahve, muzik, televizyon
+- Actions: ac (for aç, başlat, yap), kapa (for kapat, durdur)
+- The "reply" MUST be in Turkish.
+
+Examples:
+- "Klimayı aç" -> {"command": "klima_ac", "reply": "Tamam, klimayı açıyorum."}
+- "Işıkları kapat" -> {"command": "isik_kapa", "reply": "Işıkları kapattım."}
+- "Kahve yap" -> {"command": "kahve_ac", "reply": "Hemen kahvenizi hazırlıyorum."}
+- "Müziği aç" -> {"command": "muzik_ac", "reply": "Müzik başlıyor."}
+- "Televizyonu kapat" -> {"command": "televizyon_kapa", "reply": "Televizyonu kapatıyorum."}
+- "Bana bir şaka yap" -> {"command": "UNKNOWN", "reply": "Sadece ev cihazlarını kontrol edebilirim."}
+
+Output strictly JSON.
+"""
+
+def analyze_intent(text: str) -> dict:
+    """
+    Analyzes the text using Llama 3.2 via Ollama to determine the intent.
+    """
+    client = ollama.Client(host=OLLAMA_HOST)
+    
+    try:
+        response = client.chat(model=OLLAMA_MODEL, messages=[
+            {'role': 'system', 'content': SYSTEM_PROMPT},
+            {'role': 'user', 'content': f"Command: {text}"},
+        ], format='json')
+        
+        content = response['message']['content']
+        intent = json.loads(content)
+        return intent
+    except Exception as e:
+        print(f"LLM Error: {e}")
+        return {"command": "UNKNOWN", "reply": "Bir hata oluştu.", "error": str(e)}
