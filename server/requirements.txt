@@ -4,3 +4,5 @@ websockets == 15.0.1
 python-dotenv == 1.2.1
 redis == 7.1.0
 boto3 == 1.42.2
+ollama == 0.4.4
+types-requests == 2.31.0.20240406

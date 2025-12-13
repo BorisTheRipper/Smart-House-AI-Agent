@@ -1,9 +1,13 @@
 import os
 import tempfile
+import requests
 
 from fastapi import HTTPException, UploadFile
 
 from server.app import app_context
+import json
+import ollama
+from server.app.config import OLLAMA_MODEL, OLLAMA_HOST, FISH_SPEECH_API_URL
 
 
 async def transcribe_audio_file(file: UploadFile) -> str:
@@ -70,3 +74,74 @@ async def transcribe_audio_file(file: UploadFile) -> str:
                 os.remove(temp_audio_path)
             except Exception as e:
                 print(f"Error removing temp file: {e}")
+
+
+SYSTEM_PROMPT = """
+You are a smart home assistant. You analyze the user's voice command and extract the intent.
+Output ONLY a JSON object with the following schema:
+{
+  "command": "klima_ac" | "klima_kapa" | "isik_ac" | "isik_kapa" | "kahve_ac" | "kahve_kapa" | "muzik_ac" | "muzik_kapa" | "televizyon_ac" | "televizyon_kapa" | "CHAT",
+  "reply": "A short, natural Turkish response."
+}
+
+Rules:
+- If the user wants to control a device, use the specific device_action command.
+- If the user is just chatting or asking a general question, use "CHAT".
+- The "reply" MUST be in Turkish.
+- For "CHAT", reply naturally to the user's input.
+- For commands, confirm the action in the reply.
+
+Examples:
+- "Klimayı aç" -> {"command": "klima_ac", "reply": "Tamam, klimayı açıyorum."}
+- "Işıkları kapat" -> {"command": "isik_kapa", "reply": "Işıkları kapattım."}
+- "Merhaba, nasılsın?" -> {"command": "CHAT", "reply": "Merhaba! İyiyim, teşekkürler. Size nasıl yardımcı olabilirim?"}
+- "Bugün hava nasıl?" -> {"command": "CHAT", "reply": "Hava durumu hakkında bilgim yok ama sıcakladıysan klimayı ayarlayabilirim."}
+- "Kahve yap" -> {"command": "kahve_ac", "reply": "Hemen kahvenizi hazırlıyorum."}
+
+Output strictly JSON.
+"""
+
+
+def analyze_intent(text: str) -> dict:
+    """
+    Analyzes the text using Llama 3.2 via Ollama to determine the intent.
+    """
+    client = ollama.Client(host=OLLAMA_HOST)
+
+    try:
+        response = client.chat(
+            model=OLLAMA_MODEL,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": f"Command: {text}"},
+            ],
+            format="json",
+        )
+
+        content = response["message"]["content"]
+        intent = json.loads(content)
+        return intent
+    except Exception as e:
+        print(f"LLM Error: {e}")
+        return {"command": "UNKNOWN", "reply": "Bir hata oluştu.", "error": str(e)}
+
+
+def generate_speech(text: str) -> bytes:
+    """
+    Generates speech from text using the Fish Speech from the Docker container.
+    """
+    try:
+
+        payload = {"text": text, "format": "wav", "reference_id": "voice"}
+
+        print(f"Generating speech for: '{text}' at {FISH_SPEECH_API_URL}")
+        response = requests.post(FISH_SPEECH_API_URL, json=payload, timeout=10)
+
+        if response.status_code == 200:
+            return response.content
+        else:
+            print(f"Fish Speech API Error: {response.status_code} - {response.text}")
+            return b""
+    except Exception as e:
+        print(f"TTS Error: {e}")
+        return b""

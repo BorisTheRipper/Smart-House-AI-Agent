@@ -261,3 +261,5 @@ planout
 
 # i got scared to push this...
 .terraform.lock.hcl
+
+.idea/
