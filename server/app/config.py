@@ -57,6 +57,7 @@ TTS_MODEL_NAME = "tts_models/multilingual/multi-dataset/xtts_v2"
 TTS_LANGUAGE = "tr"
 TTS_SPEAKER_WAV = "assistant.wav"
 
+
 # --- Startup Check ---
 def check_keys():
     if not LLM_SECRET_TOKEN or not UNITY_CLIENT_TOKEN:
