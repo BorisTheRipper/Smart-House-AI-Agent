@@ -50,7 +50,7 @@ def get_device():
 
 DEVICE = get_device()
 WHISPER_MODEL_SIZE = "large-v3"
-OLLAMA_MODEL = "llama3.2"
+OLLAMA_MODEL = "qwen2.5:7b"
 OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
 
 TTS_MODEL_NAME = "tts_models/multilingual/multi-dataset/xtts_v2"
