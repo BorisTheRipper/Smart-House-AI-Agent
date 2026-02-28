@@ -1,252 +1,67 @@
-# WebSocket Bridge
+# 🏠 AI-Powered Smart Home Digital Twin & Agentic IoT System
 
-A real-time WebSocket communication bridge that connects LLM (Large Language Model) controllers with clients. Built with **FastAPI**, **Redis Pub/Sub**, and **Traefik** reverse proxy.
+[cite_start]A real-time **Digital Twin** ecosystem that connects an **AI Agent (LLM)** with a 3D virtual environment[cite: 33, 98]. [cite_start]This project enables natural language interaction to control a smart home simulation, featuring high-performance communication between **Unity (C#)** and **AWS-hosted backend**[cite: 34, 84, 100].
 
+![Unity](https://img.shields.io/badge/Unity-2022.3+-black?logo=unity&logoColor=white)
+![C#](https://img.shields.io/badge/C%23-DotNet-239120?logo=dotnet&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-Infrastructure-FF9900?logo=amazon-aws&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.122-009688?logo=fastapi&logoColor=white)
-![Redis](https://img.shields.io/badge/Redis-7.1-DC382D?logo=redis&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
-![Terraform](https://img.shields.io/badge/Terraform-AWS-7B42BC?logo=terraform&logoColor=white)
 
 ---
 
-## Overview
+## 🏗 System Architecture
 
-WebSocket Bridge enables seamless bidirectional communication between:
-- **LLM Controller**: Sends commands to connected clients
-- **Clients**: Receive commands and send responses back to the LLM
-
-Messages are routed through **Redis Pub/Sub** for scalability and reliability.
-
-```
-┌──────────────┐          ┌─────────────────┐          ┌──────────────┐
-│     LLM      │ ◄──────► │  WebSocket      │ ◄──────► │   Clients    │
-│  Controller  │    WS    │  Bridge Server  │    WS    │              │
-└──────────────┘          └────────┬────────┘          └──────────────┘
-                                   │
-                          ┌────────▼────────┐
-                          │  Redis Pub/Sub  │
-                          └─────────────────┘
-```
+[cite_start]The project bridges the gap between **Cloud AI** and **3D Simulation**[cite: 68, 70]:
+1. [cite_start]**Unity Client (The Body)**: Captures voice, renders the digital twin, and executes physical actions[cite: 84, 100].
+2. [cite_start]**WebSocket Bridge (The Nerve System)**: Low-latency data transfer using FastAPI and Redis[cite: 66, 73, 106].
+3. [cite_start]**LLM Agent (The Brain)**: Processes intent using **Qwen2.5-7B** and generates JSON-based IoT commands[cite: 88, 91, 103].
 
 ---
 
-## Features
+## 🛠 My Contributions (Simulation & Integration)
 
-- **WebSocket Communication** - Real-time bidirectional messaging
-- **Redis Pub/Sub** - Scalable message routing between clients
-- **Token Authentication** - Secure connections with auth tokens
-- **Rate Limiting** - Built-in protection via Traefik middleware
-- **Docker Compose** - Easy local development and deployment
-- **AWS Infrastructure** - Production-ready Terraform configs
-- **TLS/HTTPS** - Auto SSL certificates with Let's Encrypt
-- **AWS SSM Integration** - Secure secrets management
+[cite_start]As the **Unity & Integration Lead** (Barış Bideci [cite: 3, 25]), I developed the following core components:
 
----
+### 1. 3D Digital Twin Development (Unity/C#)
+* [cite_start]**Virtual Environment**: Designed a comprehensive smart home layout with interactive IoT objects like HVAC and lighting[cite: 84, 98, 104].
+* [cite_start]**State Synchronization**: Developed a C# state-management system to sync cloud-based device statuses with the 3D simulation in real-time[cite: 85, 104].
+* [cite_start]**Audio Pipeline**: Implemented a system to capture microphone input, convert `.wav` data into **byte arrays**, and stream it via WebSockets for STT processing[cite: 66, 100].
 
-## Project Structure
-
-```
-WebSocket-Bridge/
-├── server/                    # FastAPI WebSocket Server
-│   ├── app/
-│   │   ├── main.py           # Application entry point
-│   │   ├── config.py         # Configuration & secrets
-│   │   ├── connection_manager.py  # WebSocket & Redis management
-│   │   ├── dependencies.py   # Auth validation
-│   │   └── routers/
-│   │       ├── system.py     # Health check endpoints
-│   │       └── websocket.py  # WebSocket endpoint logic
-│   ├── tests/                # Test suite
-│   ├── Dockerfile
-│   └── requirements.txt
-├── unity_project/            # Unity client scripts
-│   └── Assets/Scripts/Network/
-│       └── CommandListener.cs
-├── terraform/                # AWS Infrastructure as Code
-│   ├── main.tf              # EC2, VPC, Security Groups
-│   ├── variables.tf
-│   └── scripts/install.sh   # Server bootstrap script
-├── docker-compose.yml        # Development environment
-└── docker-compose.prod.yml   # Production environment
-```
+### 2. High-Performance Bridge & Logic
+* [cite_start]**Asynchronous C# Integration**: Built a non-blocking WebSocket client in Unity to ensure the simulation frame rate remains stable during heavy data I/O[cite: 84, 117].
+* [cite_start]**JSON Command Mapping**: Engineered a parser to translate LLM-generated JSON into specific C# events within the game engine[cite: 91, 103, 104].
+* [cite_start]**Dynamic UI/UX**: Created real-time visual feedback for the LLM's status, observing system changes in real-time within the Unity environment[cite: 68, 69].
 
 ---
 
-## Quick Start
+## 🧠 AI & Backend Stack
 
-### Prerequisites
-
-- [Docker](https://docs.docker.com/get-docker/) & Docker Compose
-- Python 3.11+ (for local development)
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/zreik-blanc/WebSocket-Bridge.git
-```
-
-### 2. Configure Environment Variables
-
-Create a `.env` file in the root directory:
-
-```env
-# Authentication Tokens
-LLM_SECRET_TOKEN=your_llm_secret_token
-UNITY_CLIENT_TOKEN=your_unity_client_token
-
-# Redis Configuration
-REDIS_PASSWORD=your_redis_password
-REDIS_HOST=redis
-
-# Server Configuration (Production)
-WEB_SOCKET_PORT=8000
-DOMAIN_NAME=your-domain.com
-ACME_EMAIL=your-email@example.com
-
-# Logging
-LOG_LEVEL=INFO
-```
-
-### 3. Run with Docker Compose
-
-**Development:**
-```bash
-docker compose up -d
-```
-
-**Production (with TLS):**
-```bash
-docker compose -f docker-compose.prod.yml up -d
-```
-
-### 4. Test the Connection
-
-The WebSocket endpoint is available at:
-- **Development:** `ws://localhost/ws/{client_id}`
-- **Production:** `wss://your-domain.com/ws/{client_id}`
+* **Models**: 
+    * [cite_start]**STT**: Faster-Whisper (Optimized for low latency)[cite: 87, 101].
+    * [cite_start]**LLM**: Qwen2.5-7B-BF16 via **Ollama**[cite: 88, 90].
+    * [cite_start]**TTS**: Coqui TTS-v2 for natural voice feedback[cite: 93, 105].
+* [cite_start]**Infrastructure**: Deployed on **AWS** using **Docker**, **Redis**, and **Traefik** for load balancing and SSL/TLS termination[cite: 73, 76, 78, 81].
 
 ---
 
-## WebSocket API
+## 📂 Project Structure
+AI-Smart-Home/
+├── unity_project/            # My Core Work: The Digital Twin
+│   ├── Assets/Scripts/
+│   │   ├── Network/          # WebSocket & Byte Stream Logic
+│   │   ├── IoT/              # Device Controllers (C#)
+│   │   └── Audio/            # Mic Capture & Processing
+├── server/                   # FastAPI WebSocket Server
+├── terraform/                # Infrastructure as Code
+└── docker-compose.yml
+---
 
-### Endpoint
+## 📝 Performance Highlights
 
-```
-ws(s)://{host}/ws/{client_id}
-```
-
-### Headers
-
-| Header | Required | Description |
-|--------|----------|-------------|
-| `X-Auth-Token` | Yes | Authentication token (LLM or Client token) |
-
-### Client ID Format
-
-- Alphanumeric with underscores/hyphens
-- 1-50 characters
-- Pattern: `^[a-zA-Z0-9_-]{1,50}$`
-
-### Message Formats
-
-**LLM Controller → Client:**
-```json
-{
-  "target": "unity_client_1",
-  "message": "MoveForward 10"
-}
-```
-
-**Client → LLM Controller:**
-```json
-{
-  "sender": "unity_client_1",
-  "message": "Movement completed"
-}
-```
+* [cite_start]**Low Latency**: Achieved real-time response times for end-to-end voice-to-action cycles[cite: 106].
+* [cite_start]**Scalability**: Used Redis Pub/Sub to allow multiple simulation instances to connect to the same LLM controller[cite: 73, 74].
 
 ---
 
-## AWS Deployment
-
-### Infrastructure with Terraform
-
-```bash
-cd terraform
-
-# Initialize Terraform
-terraform init
-
-# Preview changes
-terraform plan
-
-# Deploy infrastructure
-terraform apply
-```
-
-This provisions:
-- VPC with public subnets
-- EC2 instance (Ubuntu 24.04)
-- Security groups (SSH, HTTP, HTTPS)
-- Auto-installation via user data script
-
-### AWS SSM Parameter Store
-
-Store secrets securely in AWS Parameter Store:
-```
-/WebSocket/prod/LLM_SECRET_TOKEN
-/WebSocket/prod/UNITY_CLIENT_TOKEN
-/WebSocket/prod/REDIS_PASSWORD
-```
-
----
-
-## Development
-
-### Local Server (without Docker)
-
-```bash
-cd server
-pip install -r requirements.txt
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
----
-
-## Tech Stack
-
-| Component | Technology |
-|-----------|------------|
-| Backend | FastAPI, Python 3.11+ |
-| Message Broker | Redis Pub/Sub |
-| Reverse Proxy | Traefik v3 |
-| Containerization | Docker, Docker Compose |
-| Infrastructure | Terraform, AWS |
-| SSL/TLS | Let's Encrypt (ACME) |
-| Game Engine | Unity (C#) |
-
----
-
-## Roadmap
-
-- [ ] Getting Secrets From AWS SSM Parameter Store
-- [ ] Prometheus & Grafana monitoring
-
----
-
-## License
-
-This project is licensed under the terms specified in [LICENSE](LICENSE).
-
----
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/super-idea`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/super-idea`)
-5. Open a Pull Request
+### 🎓 Academic Context
+[cite_start]This project was developed as the **BM201 Advanced Programming Lab Project** at **Gazi University**, Computer Engineering Department[cite: 6, 7, 8, 9].
