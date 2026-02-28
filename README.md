@@ -47,13 +47,13 @@ As the **Unity & Integration Lead** (Barış Bideci), I developed the following 
 ## 📂 Project Structure
 
 ```text
+## 📂 Project Structure
+
 AI-Smart-Home/
-├── unity_project/           # Digital Twin (Barış Bideci)
-│   └── Assets/
-│       └── Scripts/
-│           ├── Network/     # WebSocket & Byte Stream Bridge
-│           ├── IoT/         # C# Device State Controllers
-│           └── Audio/       # Mic Capture & PCM Data Processing
+├── unity_project/           # Digital Twin & C# Integration (Barış Bideci)
+│   └── Assets/Scripts/
+│       ├── Network/         # WebSocket Bridge & Byte Stream Logic
+│       └── UserScripts/      # IoT Device Controllers & User Interaction
 ├── server/                  # FastAPI & WebSocket Logic
 │   ├── app/
 │   │   ├── main.py
