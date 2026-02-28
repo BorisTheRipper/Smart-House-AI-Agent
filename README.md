@@ -45,15 +45,25 @@ As the **Unity & Integration Lead** (Barış Bideci), I developed the following 
 ---
 
 ## 📂 Project Structure
+
+```text
 AI-Smart-Home/
-├── unity_project/            # My Core Work: The Digital Twin
-│   ├── Assets/Scripts/
-│   │   ├── Network/          # WebSocket & Byte Stream Logic
-│   │   ├── IoT/              # Device Controllers (C#)
-│   │   └── Audio/            # Mic Capture & Processing
-├── server/                   # FastAPI WebSocket Server
-├── terraform/                # Infrastructure as Code
-└── docker-compose.yml
+├── unity_project/           # Digital Twin (Barış Bideci)
+│   └── Assets/
+│       └── Scripts/
+│           ├── Network/     # WebSocket & Byte Stream Bridge
+│           ├── IoT/         # C# Device State Controllers
+│           └── Audio/       # Mic Capture & PCM Data Processing
+├── server/                  # FastAPI & WebSocket Logic
+│   ├── app/
+│   │   ├── main.py
+│   │   └── connection_manager.py
+│   └── Dockerfile
+├── terraform/               # Infrastructure as Code (AWS)
+│   ├── main.tf
+│   └── variables.tf
+└── docker-compose.yml       # Orchestration (Redis, Traefik, App)
+```
 ---
 
 ## 📝 Performance Highlights
